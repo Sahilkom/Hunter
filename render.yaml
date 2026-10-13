@@ -1,0 +1,25 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Free web services have an ephemeral disk, so jobs and resumes reset on restart.
+# To keep data, switch plan to starter and uncomment the disk and DATA_DIR blocks.
+services:
+  - type: web
+    name: hunter-memory
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Next.js compiles with TypeScript and Tailwind, which live in devDependencies.
+      # Render sets NODE_ENV=production, which would otherwise skip those packages.
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      # - key: DATA_DIR
+      #   value: /var/data
+    # disk:
+    #   name: hunter-memory-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
