@@ -240,6 +240,10 @@ function parseGoogle(html: string): Opening[] {
   return openings;
 }
 
+export async function fetchGoogleOpenings(queries: string[]): Promise<Opening[] | null> {
+  return fetchGoogle(queries);
+}
+
 async function fetchGoogle(queries: string[]): Promise<Opening[] | null> {
   const pages = await Promise.all(
     capQueries(queries).flatMap((query) =>
@@ -502,13 +506,14 @@ export async function applyCareerIdentities(jobs: Job[]): Promise<{ jobs: Job[];
       if (!updates.has(job.id)) return job;
       const hit = updates.get(job.id);
       if (!hit) {
-        return { ...job, careerJobId: null, careerTitle: null };
+        return { ...job, careerJobId: null, careerTitle: null, directLink: false };
       }
       return {
         ...job,
         careerJobId: hit.careerJobId,
         careerTitle: hit.careerTitle,
         applyUrl: hit.applyUrl || job.applyUrl,
+        directLink: !!hit.applyUrl,
       };
     }),
   };

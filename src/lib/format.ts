@@ -27,6 +27,8 @@ export function companyTierLabel(tier: string): string {
       return "Strong firm";
     case "startup":
       return "Startup";
+    case "other":
+      return "Other";
     default:
       return tier;
   }

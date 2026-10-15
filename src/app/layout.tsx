@@ -26,7 +26,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${display.variable} ${sans.variable} h-full antialiased`}
     >
-      <body className="min-h-full font-sans text-[var(--ink)]">{children}</body>
+      <body
+        className="min-h-full font-sans text-[var(--ink)]"
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }

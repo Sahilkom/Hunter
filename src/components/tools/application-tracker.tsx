@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Kanban, Loader2, Mail, Trash2 } from "lucide-react";
+import { Download, ExternalLink, Kanban, Loader2, Mail, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Application, ApplicationStatus, Job } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/types";
@@ -121,6 +121,9 @@ export function ApplicationTracker({
   };
 
   const remove = async (id: string) => {
+    const row = rows.find((r) => r.id === id);
+    const label = row?.job ? `${row.job.company} — ${row.job.careerTitle || row.job.title}` : "this application";
+    if (!window.confirm(`Remove ${label} from the tracker?`)) return;
     setSavingId(id);
     try {
       const res = await fetch(`/api/applications?id=${encodeURIComponent(id)}`, {
@@ -128,8 +131,21 @@ export function ApplicationTracker({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Delete failed");
-      setRows((prev) => prev.filter((row) => row.id !== id));
-      toast.success("Removed from tracker");
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      const jobId = row?.jobId;
+      toast.success("Removed from tracker. The job is back in Job Finder.", {
+        action: jobId
+          ? {
+              label: "Hide it there too",
+              onClick: () =>
+                void fetch("/api/jobs", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ dismiss: jobId }),
+                }).then(() => onChanged?.()),
+            }
+          : undefined,
+      });
       onChanged?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
@@ -357,6 +373,18 @@ export function ApplicationTracker({
                   ) : null}
                   Save notes
                 </Button>
+                {row.job?.applyUrl ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    nativeButton={false}
+                    render={<a href={row.job.applyUrl} target="_blank" rel="noreferrer" />}
+                  >
+                    {row.job.origin === "live" || row.job.directLink ? "View job" : "Career page"}
+                    <ExternalLink className="size-3.5" />
+                  </Button>
+                ) : null}
                 <Button
                   size="sm"
                   variant="outline"

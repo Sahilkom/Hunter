@@ -37,11 +37,17 @@ function daysAgoIso(days: number): string {
 function job(
   partial: SeedInput,
 ): Job {
+  const { daysAgo, ...rest } = partial;
+  const postedAt = daysAgoIso(daysAgo);
   return {
-    ...partial,
-    postedAt: daysAgoIso(partial.daysAgo),
+    ...rest,
+    postedAt,
     refreshedAt: new Date().toISOString(),
-    isNew: partial.daysAgo <= 2,
+    discoveredAt: postedAt,
+    isNew: daysAgo <= 2,
+    origin: "seed",
+    directLink: false,
+    yoeSource: "listed",
   };
 }
 
@@ -746,11 +752,7 @@ export const REFRESH_POOL: SeedInput[] = [
 ];
 
 export function buildSeedJobs(): Job[] {
-  return BASE.map((item) => {
-    const { daysAgo: _daysAgo, ...rest } = item;
-    void _daysAgo;
-    return job(item);
-  });
+  return BASE.map((item) => job(item));
 }
 
 export function materializeRefreshJob(item: SeedInput, index: number): Job {

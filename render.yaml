@@ -1,6 +1,7 @@
 # Render Blueprint: https://render.com/docs/blueprint-spec
-# Free web services have an ephemeral disk, so jobs and resumes reset on restart.
-# To keep data, switch plan to starter and uncomment the disk and DATA_DIR blocks.
+# Free web services have an ephemeral disk, so local data resets on restart.
+# Keep data by connecting Google Drive from the Storage card (see README → Storage),
+# or switch plan to starter and uncomment the disk and DATA_DIR blocks.
 services:
   - type: web
     name: hunter-memory
@@ -17,6 +18,16 @@ services:
       # Render sets NODE_ENV=production, which would otherwise skip those packages.
       - key: NPM_CONFIG_PRODUCTION
         value: "false"
+      # Google Drive storage (OAuth client from Google Cloud Console).
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      # Optional: LinkedIn / Naukri / Indeed listings via JSearch (RapidAPI).
+      - key: RAPIDAPI_KEY
+        sync: false
       # - key: DATA_DIR
       #   value: /var/data
     # disk:

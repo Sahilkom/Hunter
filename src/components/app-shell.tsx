@@ -22,7 +22,7 @@ const TOOLS = [
   {
     id: "finder" as const,
     label: "Job Finder",
-    description: "Daily SE openings",
+    description: "Live SE openings",
     icon: BriefcaseBusiness,
   },
   {
@@ -100,6 +100,7 @@ export function AppShell() {
   const [trackerToken, setTrackerToken] = useState(0);
   const [overviewKey, setOverviewKey] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [storageVersion, setStorageVersion] = useState(0);
 
   useEffect(() => {
     setActive(readToolFromUrl());
@@ -135,7 +136,7 @@ export function AppShell() {
             <NavList active={active} onSelect={select} />
           </div>
           <p className="px-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
-            India · Software Engineer · 0–2 YOE
+            India · Software Engineering · all experience levels
           </p>
         </aside>
 
@@ -168,8 +169,14 @@ export function AppShell() {
           </header>
 
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <WorkspaceOverview refreshKey={overviewKey} />
-            <div key={active} className="tool-panel animate-in">
+            <WorkspaceOverview
+              refreshKey={overviewKey}
+              onStorageChanged={() => {
+                setStorageVersion((n) => n + 1);
+                bumpOverview();
+              }}
+            />
+            <div key={`${active}-${storageVersion}`} className="tool-panel animate-in">
               {active === "finder" && (
                 <JobFinder
                   onMarkedApplied={() => {

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Loader2, Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
 import type { Job, ResumeData } from "@/lib/types";
 import { ResumePreview } from "@/components/resume-preview";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,20 @@ export function ResumeTailor({ onChanged }: { onChanged?: () => void }) {
   const [busy, setBusy] = useState<"upload" | "sample" | "tailor" | "pdf" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [jobQuery, setJobQuery] = useState("");
+
+  const pickable = useMemo(() => {
+    const q = jobQuery.trim().toLowerCase();
+    const matches = q
+      ? jobs.filter((j) =>
+          `${j.company} ${j.careerTitle || j.title} ${j.careerJobId ?? ""}`.toLowerCase().includes(q),
+        )
+      : jobs;
+    const list = matches.slice(0, 150);
+    const selected = jobs.find((j) => j.id === jobId);
+    if (selected && !list.some((j) => j.id === selected.id)) list.unshift(selected);
+    return list;
+  }, [jobs, jobQuery, jobId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -165,6 +180,12 @@ export function ResumeTailor({ onChanged }: { onChanged?: () => void }) {
           <label className="mb-1.5 block text-xs font-medium text-[var(--muted-foreground)]">
             Target job
           </label>
+          <Input
+            value={jobQuery}
+            onChange={(e) => setJobQuery(e.target.value)}
+            placeholder="Filter jobs by company, title or job ID…"
+            className="mb-2"
+          />
           <Select value={jobId} onValueChange={(value) => setJobId(value ?? "")}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a job">
@@ -177,7 +198,7 @@ export function ResumeTailor({ onChanged }: { onChanged?: () => void }) {
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {jobs.map((job) => (
+              {pickable.map((job) => (
                 <SelectItem key={job.id} value={job.id}>
                   {job.company} — {job.careerTitle || job.title}
                   {job.careerJobId ? ` (${job.careerJobId})` : ""}
